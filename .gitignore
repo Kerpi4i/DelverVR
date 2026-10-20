@@ -1,0 +1,17 @@
+tools/
+lib/
+build/
+dist/
+engine/
+*-api.txt
+api.txt
+vr-save/
+*.log
+release/
+quest/
+null
+PowerShell*/
+.vs/
+*.user
+*.pfx
+*.pem
