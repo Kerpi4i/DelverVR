@@ -21,7 +21,7 @@ cause substantial frame drops.
 
 ## Install
 
-1. Download `DelverVR-Setup-0.2.0-beta.1.exe` from Releases and run it.
+1. Download `DelverVR-Setup-0.2.0-beta.2.exe` from Releases and run it.
 2. Select the **game folder containing `delver.jar`**, for example
    `C:\Program Files (x86)\Steam\steamapps\common\Delver`.
 3. Install. The installer creates a `DelverVR` subfolder and generates patches
@@ -55,6 +55,7 @@ Steam achievements or Workshop API integration.
 | Grab nearby item / hotbar slot | Grip |
 | Store / throw | Release grip near body / during a throwing swing |
 | Use item / weapon | Trigger; tracked swings for melee |
+| Bomb | Trigger lights fuse; a physical throw also lights it |
 | Bow | Hold bow, draw with other hand, release trigger |
 | Ladder | Left stick forward/back while touching ladder; sideways to dismount |
 | Pause / close inventory | Left X/menu action |
@@ -98,8 +99,8 @@ With your own Steam installation, on Windows:
 .\packaging\build-installer.ps1 -GamePath 'D:\SteamLibrary\steamapps\common\Delver'
 ```
 
-For a custom game path, use `build.ps1 -GamePath ...` and adjust the game path
-in the local test script. Development bootstrap downloads a JDK/dependencies;
+For a custom game path, use `build.ps1 -GamePath ...` and `test.ps1 -GamePath ...`.
+Development bootstrap downloads a JDK/dependencies;
 these tools are not needed by players. Installer output is in `release/`.
 The EXEs use the .NET Framework compiler supplied with Windows. Hosted CI
 cannot build against proprietary game data without a user-supplied copy.

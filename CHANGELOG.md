@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.2.0-beta.2 — 2026-10-20
+
+- Action trigger lights held bombs; physical throws arm unlit bombs.
+- Bomb fuses tick once per game update in either tracked hand, at the hand's
+  position. Expired bombs are removed from the hand and inventory. Native wet
+  fuses and dud behavior are preserved; placing an unlit bomb does not arm it.
+- Inventory clicks use food/potions/scrolls even when the item is already
+  selected. Native drag-and-drop and weapon/armor equip behavior are retained.
+- Regression tests exercise native bomb countdowns and real inventory click
+  events, including selected items and dragging without consumption.
+- Test script accepts `-GamePath` for isolated/custom game installations.
+
 ## 0.2.0-beta.1 — 2026-10-20
 
 - EXE installer: game folder selection and local compatibility patch generation.

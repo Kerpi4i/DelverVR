@@ -225,6 +225,28 @@ public final class Vr {
         }
     }
     static boolean pMenu(){return current!=null&&current.getShowingMenu();}
+    public static boolean trackedBomb(Item item){
+        if(!tracked||current==null||!(item instanceof FusedBomb))return false;
+        for(Hand h:hands)if(h.held==item)return true;
+        return false;
+    }
+    public static void tickHeldBombs(Player p,Level level,float delta){
+        if(!tracked||current==null||current.player!=p)return;
+        Item previous=null;
+        for(Hand h:hands){
+            if(!(h.held instanceof FusedBomb)||h.held==previous)continue;
+            FusedBomb bomb=(FusedBomb)h.held;previous=bomb;
+            if(!p.inventory.contains(bomb,true)){h.held=null;continue;}
+            if(bomb.isActive){
+                bomb.x=h.valid?h.pos.x:p.x;bomb.y=h.valid?h.pos.z:p.y;
+                bomb.z=h.valid?h.pos.y+.5f:p.z+p.eyeHeight;
+                bomb.xa=bomb.ya=bomb.za=0;
+                bomb.tickEquipped(p,level,delta,"PRIMARY");
+            }
+            if(!bomb.isActive){p.removeFromInventory(bomb);h.held=null;}
+        }
+    }
+    static void lightBomb(Item item){if(item instanceof FusedBomb&&!((FusedBomb)item).isLit)item.onChargeStart();}
     static void move(Player p,float dx,float dz) {
         Locomotion.move(current.level,p,dx,dz);
     }
@@ -270,7 +292,7 @@ public final class Vr {
         // The engine integrates velocities per 60 Hz tick.
         Vector3 v=throwing?Throwing.velocity(h.throwVelocity):new Vector3(h.throwVelocity).scl(1/60f);
         item.xa=v.x;item.ya=v.z;item.za=v.y;item.physicsSleeping=false;
-        if(throwing)item.tossItem(current.level,Throwing.power(h.throwVelocity));
+        if(throwing){lightBomb(item);item.tossItem(current.level,Throwing.power(h.throwVelocity));}
         h.held=null;pulse(h);
     }
     static void activate(int i) {
@@ -285,6 +307,7 @@ public final class Vr {
             fire(h,1f);
             return;
         }
+        if(h.held instanceof FusedBomb){lightBomb(h.held);pulse(h);return;}
         if(h.held!=null&&!(h.held instanceof Weapon)){h.held.inventoryUse(p);return;}
     }
     static Entity target(Hand h,boolean items) {

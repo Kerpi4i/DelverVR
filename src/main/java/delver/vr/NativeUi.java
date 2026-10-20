@@ -5,6 +5,9 @@ import com.badlogic.gdx.math.*;
 import java.lang.reflect.*;
 import com.interrupt.dungeoneer.GameApplication;
 import com.interrupt.dungeoneer.overlays.OverlayManager;
+import com.interrupt.dungeoneer.entities.Item;
+import com.interrupt.dungeoneer.entities.Player;
+import com.interrupt.dungeoneer.entities.items.*;
 
 /** Feed the existing Delver UI the same mouse events and polling state as a real mouse. */
 public final class NativeUi {
@@ -67,4 +70,13 @@ public final class NativeUi {
         }
     }
     static void cancelClick(){down=false;inside=false;waitRelease=true;}
+    public static boolean useConsumable(Player player,int slot){
+        if(!active||!Vr.tracked||Vr.current==null||Vr.current.player!=player||!Vr.current.getShowingMenu())return false;
+        if(slot<0||slot>=player.inventory.size)return false;
+        Item item=player.inventory.get(slot);
+        // Do not change equip/unequip behavior for weapons and armor. The native
+        // ClickListener already rejects drags before invoking UseInventoryItem.
+        if(item instanceof Food||item instanceof Potion||item instanceof Scroll)return item.inventoryUse(player);
+        return false;
+    }
 }

@@ -6,8 +6,7 @@ part of this public source release.
 
 Build/test against your own Steam copy. `bootstrap.ps1` downloads LWJGL 3.3.3,
 libGDX backend 1.9.9, Javassist 3.30.2-GA and a development JDK. Use
-`build.ps1 -GamePath ...` for a custom game path. `test.ps1` currently uses the
-standard Steam path; adjust its local game path if needed.
+`build.ps1 -GamePath ...` and `test.ps1 -GamePath ...` for a custom game path.
 
 Regression tests need desktop OpenGL. They run a simulated VR window against
 real game physics and cover interaction, stereo lighting, locomotion,

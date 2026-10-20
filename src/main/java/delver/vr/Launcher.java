@@ -40,6 +40,7 @@ public final class Launcher implements ApplicationListener {
         if(Boolean.getBoolean("delver.vr.regression")&&frames==50)try{
             Class.forName("delver.vr.InteractionRegression").getMethod("run").invoke(null);
             Class.forName("delver.vr.LadderRegression").getMethod("run").invoke(null);
+            Class.forName("delver.vr.ItemUseRegression").getMethod("run").invoke(null);
             Class.forName("delver.vr.ShadowBatchRegression").getMethod("run").invoke(null);
         }catch(Exception e){throw new RuntimeException("VR interaction regression failed",e);}
         if(Boolean.getBoolean("delver.vr.smoke.save")&&frames==31)com.interrupt.dungeoneer.GameManager.getGame().save();
