@@ -15,12 +15,6 @@ public final class PatchGame {
         actor.writeFile(args[2]);
         CtClass player=cp.get("com.interrupt.dungeoneer.entities.Player");
         player.getDeclaredMethod("UseInventoryItem").insertBefore("if(delver.vr.NativeUi.useConsumable(this,$1)) return;");
-        player.getDeclaredMethod("updatePlayerLight").instrument(new ExprEditor(){
-            public void edit(MethodCall m)throws CannotCompileException{
-                if(m.getMethodName().equals("tickEquipped"))m.replace("{ if(!delver.vr.Vr.trackedBomb($0)) $proceed($$); }");
-            }
-        });
-        player.getDeclaredMethod("updatePlayerLight").insertAfter("delver.vr.Vr.tickHeldBombs(this,$1,$2);");
         player.getDeclaredMethod("tick",new CtClass[]{cp.get("com.interrupt.dungeoneer.game.Level"),CtClass.floatType}).instrument(new ExprEditor(){
             public void edit(FieldAccess f)throws CannotCompileException{
                 if(f.isWriter()&&f.getFieldName().equals("isOnLadder"))

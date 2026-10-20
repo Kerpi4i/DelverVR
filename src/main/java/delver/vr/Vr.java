@@ -225,33 +225,6 @@ public final class Vr {
         }
     }
     static boolean pMenu(){return current!=null&&current.getShowingMenu();}
-    public static boolean trackedBomb(Item item){
-        if(!tracked||current==null||!(item instanceof FusedBomb))return false;
-        for(Hand h:hands)if(h.held==item)return true;
-        return false;
-    }
-    public static void tickHeldBombs(Player p,Level level,float delta){
-        if(!tracked||current==null||current.player!=p)return;
-        Item previous=null;
-        for(Hand h:hands){
-            if(!(h.held instanceof FusedBomb)||h.held==previous)continue;
-            FusedBomb bomb=(FusedBomb)h.held;previous=bomb;
-            if(!p.inventory.contains(bomb,true)){h.held=null;continue;}
-            // Item.pickup sets isActive=false to remove the world representation.
-            // Temporarily activate ONLY this synchronous equipped tick, then restore
-            // inventory state. Native explode() switching it back off marks detonation.
-            boolean pickup=bomb.isPickup,survived=false;
-            bomb.isActive=true;bomb.isPickup=false;
-            try{
-                bomb.x=h.valid?h.pos.x:p.x;bomb.y=h.valid?h.pos.z:p.y;
-                bomb.z=h.valid?h.pos.y+.5f:p.z+p.eyeHeight;
-                bomb.xa=bomb.ya=bomb.za=0;
-                bomb.tickEquipped(p,level,delta,"PRIMARY");
-                survived=bomb.isActive;
-            }finally{bomb.isActive=false;bomb.isPickup=pickup;}
-            if(!survived){p.removeFromInventory(bomb);h.held=null;}
-        }
-    }
     static void lightBomb(Item item){if(item instanceof FusedBomb&&!((FusedBomb)item).isLit)item.onChargeStart();}
     static void move(Player p,float dx,float dz) {
         Locomotion.move(current.level,p,dx,dz);
@@ -306,7 +279,7 @@ public final class Vr {
         // The engine integrates velocities per 60 Hz tick.
         Vector3 v=throwing?Throwing.velocity(h.throwVelocity):new Vector3(h.throwVelocity).scl(1/60f);
         item.xa=v.x;item.ya=v.z;item.za=v.y;item.physicsSleeping=false;
-        if(throwing){lightBomb(item);item.tossItem(current.level,Throwing.power(h.throwVelocity));}
+        if(throwing)item.tossItem(current.level,Throwing.power(h.throwVelocity));
         h.held=null;pulse(h);
     }
     static void activate(int i) {
@@ -316,7 +289,7 @@ public final class Vr {
         // A door or conversation takes priority over consuming/firing a held item.
         Entity nearest=target(h,false);
         if(nearest!=null){Vector3 dir=new Vector3(0,0,-1).rot(h.world).nor();nearest.use(p,dir.x,dir.z);pulse(h);return;}
-        if(h.held==null){Entity item=target(h,true);if(item!=null){pickup(i,(Item)item,false);return;}}
+        {Entity item=target(h,true);if(item!=null){pickup(i,(Item)item,false);return;}}
         if(h.held instanceof Bow){h.drawingBow=true;h.bowDraw=0;return;}
         if(h.held instanceof Wand||h.held instanceof Bow) {
             fire(h,1f);

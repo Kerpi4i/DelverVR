@@ -21,7 +21,7 @@ cause substantial frame drops.
 
 ## Install
 
-1. Download `DelverVR-Setup-0.2.0-beta.4.exe` from Releases and run it.
+1. Download `DelverVR-Setup-0.2.0-beta.5.exe` from Releases and run it.
 2. Select the **game folder containing `delver.jar`**, for example
    `C:\Program Files (x86)\Steam\steamapps\common\Delver`.
 3. Install. The installer creates a `DelverVR` subfolder and generates patches
@@ -55,10 +55,10 @@ To change floors, stand near the stairs, point a controller at them and press th
 | Open inventory | BAG beside left-arm hotbar; right grip/trigger |
 | Menu/inventory pointer | Right ray; trigger to click, hold and move to drag |
 | Grab nearby item / hotbar slot | Grip |
-| Collect a ground item into inventory | Trigger with an empty hand |
+| Collect a ground item into inventory | Trigger |
 | Store / throw | Release grip near body / during a throwing swing |
 | Use item / weapon | Trigger; tracked swings for melee |
-| Bomb in hand | Trigger lights fuse; a physical throw also lights it |
+| Bomb in hand | Trigger lights fuse; throwing uses the original item behavior |
 | Bow | Hold bow, draw with other hand, release trigger |
 | Ladder | Left stick forward/back while touching ladder; sideways to dismount |
 | Pause / close inventory | Left X/menu action |
