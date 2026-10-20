@@ -43,6 +43,9 @@ public final class ItemUseRegression {
             Vr.grab(1);
             check(right.held==groundGrip&&p.inventory.contains(groundGrip,true)&&!groundGrip.isActive,"Grip did not perform native ground-to-hand pickup");
             Vr.activate(1);check(groundGrip.isLit,"Upper trigger did not ignite held bomb");
+            Method nativeTick=Player.class.getDeclaredMethod("updatePlayerLight",Level.class,float.class);nativeTick.setAccessible(true);
+            nativeTick.invoke(p,level,.5f);
+            check(groundGrip.isLit&&Math.abs(groundGrip.countdownTimer-1.5f)<.001f,"Ignition did not survive native equipped tick: lit="+groundGrip.isLit+" timer="+groundGrip.countdownTimer+" water="+groundGrip.inwater+" position="+groundGrip.x+","+groundGrip.y+","+groundGrip.z);
             groundGrip.countdownTimer=.1f;Vr.activate(1);
             check(groundGrip.countdownTimer==.1f,"Repeated trigger reset fuse");
             right.throwVelocity.set(0,0,-5f*Vr.SCALE);Vr.release(1);
@@ -63,6 +66,9 @@ public final class ItemUseRegression {
                 check(p.inventory.contains(item,true)&&h.held==item,"Grip pickup failed "+item.getClass()+" hand "+hand);
                 h.held=null;p.ChangeHeldItem(null,false);p.removeFromInventory(item);
             }
+            BombProbe wet=new BombProbe();fixtures.add(wet);put(p,wet);right.held=wet;
+            Field wetFlag=FusedBomb.class.getDeclaredField("isWet");wetFlag.setAccessible(true);wetFlag.setBoolean(wet,true);
+            Vr.activate(1);check(!wet.isLit,"Wet bomb incorrectly ignited");right.held=null;
             Item occupied=new Sword();fixtures.add(occupied);int occupiedSlot=put(p,occupied);
             right.held=occupied;p.heldItem=p.selectedBarItem=occupiedSlot;
             right.pos.set(p.x,p.z+p.eyeHeight,p.y);right.world.idt().translate(right.pos);
