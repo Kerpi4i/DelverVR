@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.2.0-beta.3 — 2026-10-20
+
+- Fix bomb loss after pickup: inventory items being inactive in the world are
+  no longer mistaken for detonated bombs. Equipped ticking temporarily enables
+  the native bomb tick without triggering automatic pickup, then restores the
+  inventory state.
+- Grip picks ground items into the hand. Action trigger with an empty hand
+  collects ground items into inventory without auto-equipping or consuming.
+- Action trigger while holding a bomb lights its fuse before other contextual
+  actions. Existing throwing behavior is retained.
+- Regression test now starts with native ground pickup, verifies inactive
+  inventory state, then follows holding, lighting, throwing and detonation.
+
 ## 0.2.0-beta.2 — 2026-10-20
 
 - Action trigger lights held bombs; physical throws arm unlit bombs.

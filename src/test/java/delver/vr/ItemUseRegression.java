@@ -20,7 +20,11 @@ public final class ItemUseRegression {
     public static final class PotionProbe extends Potion {int uses;public boolean inventoryUse(Player p){uses++;return true;}}
     static void check(boolean condition,String message){if(!condition)throw new AssertionError(message);}
     static int empty(Player p){int slot=p.inventory.indexOf(null,true);if(slot<0){p.addInventorySlot();slot=p.inventory.indexOf(null,true);}return slot;}
-    static int put(Player p,Item item){int slot=empty(p);p.inventory.set(slot,item);return slot;}
+    static int put(Player p,Item item){int slot=empty(p);p.inventory.set(slot,item);item.isActive=false;return slot;}
+    static void onGround(Item item,Player p,Vr.Hand hand,Level level){
+        item.x=hand.pos.x;item.y=hand.pos.z-.3f;item.z=hand.pos.y+.5f-item.collision.z*.5f;item.isActive=true;
+        level.entities.add(item);Vr.interactionEntities.clear();Vr.interactionEntities.add(item);
+    }
     public static void run()throws Exception {
         Player p=Vr.current.player;Level level=Vr.current.level;Vr.Hand left=Vr.hands[0],right=Vr.hands[1];
         Array<Item> inventory=new Array<Item>(p.inventory);int inventorySize=p.inventorySize;
@@ -36,6 +40,24 @@ public final class ItemUseRegression {
             left.world.idt().translate(-100,100,-100);left.pos.set(-100,100,-100);
             right.pos.set(p.x,p.z+p.eyeHeight,p.y);right.world.idt().translate(right.pos);
             Method tick=Player.class.getDeclaredMethod("updatePlayerLight",Level.class,float.class);tick.setAccessible(true);
+            BombProbe groundGrip=new BombProbe();fixtures.add(groundGrip);onGround(groundGrip,p,right,level);
+            Vr.grab(1);
+            check(right.held==groundGrip&&p.inventory.contains(groundGrip,true)&&!groundGrip.isActive,"Grip did not perform native ground-to-hand pickup");
+            tick.invoke(p,level,.5f);
+            check(right.held==groundGrip&&p.inventory.contains(groundGrip,true)&&!groundGrip.isLit&&!groundGrip.isActive,"Picked-up inactive bomb disappeared or lit itself");
+            Vr.activate(1);check(groundGrip.isLit,"Upper trigger did not light a ground-picked bomb");
+            tick.invoke(p,level,.5f);
+            check(right.held==groundGrip&&Math.abs(groundGrip.countdownTimer-1.5f)<.001f&&!groundGrip.isActive,"Ground-picked bomb fuse was skipped, doubled or removed");
+            right.throwVelocity.set(0,0,-5f*Vr.SCALE);Vr.release(1);
+            check(groundGrip.isActive&&groundGrip.isLit&&right.held==null&&!p.inventory.contains(groundGrip,true),"Ground-picked bomb could not be thrown");
+            groundGrip.tick(level,2f);check(groundGrip.explosions==1,"Ground-picked thrown bomb did not detonate");
+            p.ChangeHeldItem(null,false);
+            BombProbe groundStore=new BombProbe();fixtures.add(groundStore);onGround(groundStore,p,right,level);
+            Vr.activate(1);
+            check(right.held==null&&p.GetHeldItem()==null&&p.inventory.contains(groundStore,true)&&!groundStore.isLit&&!groundStore.isActive,"Upper trigger did not store ground bomb without equipping/lighting it");
+            tick.invoke(p,level,.5f);
+            check(p.inventory.contains(groundStore,true)&&groundStore.explosions==0,"Stored ground bomb disappeared");
+            Vr.interactionEntities.clear();
             BombProbe bomb=new BombProbe();fixtures.add(bomb);int slot=put(p,bomb);
             right.held=bomb;p.heldItem=p.selectedBarItem=slot;
             Vr.activate(1);check(bomb.isLit,"Right trigger did not light native fuse");
@@ -65,7 +87,7 @@ public final class ItemUseRegression {
             p.selectedBarItem=p.heldItem=potionSlot;click(potionSlot,false);check(potion.uses==1,"Selected potion quick click did not consume");
             p.selectedBarItem=null;click(potionSlot,false);check(potion.uses==2,"Unselected potion quick click did not consume");
             click(foodSlot,true);check(food.uses==2,"Dragging food consumed it");
-            com.badlogic.gdx.Gdx.app.log("DelverVR","ITEM USE PASS: bomb trigger/throw/timer/both hands/wet/dud; real inventory clicks selected/unselected food/potions; drag does not consume");
+            com.badlogic.gdx.Gdx.app.log("DelverVR","ITEM USE PASS: real ground bomb grip/action pickup, inactive inventory state, hand fuse/throw/detonation, both hands/wet/dud; inventory clicks and drag");
         }finally{
             NativeUi.down=false;
             for(Item item:fixtures){level.entities.removeValue(item,true);level.non_collidable_entities.removeValue(item,true);}

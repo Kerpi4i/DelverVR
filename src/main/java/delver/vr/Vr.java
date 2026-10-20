@@ -237,13 +237,19 @@ public final class Vr {
             if(!(h.held instanceof FusedBomb)||h.held==previous)continue;
             FusedBomb bomb=(FusedBomb)h.held;previous=bomb;
             if(!p.inventory.contains(bomb,true)){h.held=null;continue;}
-            if(bomb.isActive){
+            // Item.pickup sets isActive=false to remove the world representation.
+            // Temporarily activate ONLY this synchronous equipped tick, then restore
+            // inventory state. Native explode() switching it back off marks detonation.
+            boolean pickup=bomb.isPickup,survived=false;
+            bomb.isActive=true;bomb.isPickup=false;
+            try{
                 bomb.x=h.valid?h.pos.x:p.x;bomb.y=h.valid?h.pos.z:p.y;
                 bomb.z=h.valid?h.pos.y+.5f:p.z+p.eyeHeight;
                 bomb.xa=bomb.ya=bomb.za=0;
                 bomb.tickEquipped(p,level,delta,"PRIMARY");
-            }
-            if(!bomb.isActive){p.removeFromInventory(bomb);h.held=null;}
+                survived=bomb.isActive;
+            }finally{bomb.isActive=false;bomb.isPickup=pickup;}
+            if(!survived){p.removeFromInventory(bomb);h.held=null;}
         }
     }
     static void lightBomb(Item item){if(item instanceof FusedBomb&&!((FusedBomb)item).isLit)item.onChargeStart();}
@@ -255,17 +261,25 @@ public final class Vr {
         if(i==1&&takeHotbar())return;
         Entity nearest=target(h,true);
         if(nearest!=null) {
-            Item item=(Item)nearest;
-            if(item.canPickup(p)){
+            pickup(i,(Item)nearest,true);
+        } else if(i==1&&p.GetHeldItem()!=null) {claim(h,p.GetHeldItem());pulse(h);}
+    }
+    static void pickup(int i,Item item,boolean hold){
+        Hand h=hands[i];Player p=current.player;
+        if(item.canPickup(p)){
+                Integer oldHeld=p.heldItem,oldSelected=p.selectedBarItem;
                 // Explicitly catching an item also catches one still settling on the floor.
                 float vx=item.xa,vy=item.ya,vz=item.za;item.xa=item.ya=item.za=0;
                 // doPickup is the automatic-pickup path: Potion/Food/Scroll
                 // override it to consume immediately. Grasping uses pickup only.
                 try{pickupItem.invoke(item,p);}catch(Exception e){throw new RuntimeException("Could not pick up "+item.getClass().getName(),e);}
-                if(p.inventory.contains(item,true)){claim(h,item);p.ChangeHeldItem(p.inventory.indexOf(item,true),false);pulse(h);}
+                if(p.inventory.contains(item,true)){
+                    if(hold){claim(h,item);p.ChangeHeldItem(p.inventory.indexOf(item,true),false);}
+                    else{p.ChangeHeldItem(oldHeld,false);p.selectedBarItem=oldSelected;}
+                    pulse(h);
+                }
                 else if(item.isActive){item.xa=vx;item.ya=vy;item.za=vz;}
-            }
-        } else if(i==1&&p.GetHeldItem()!=null) {claim(h,p.GetHeldItem());pulse(h);}
+        }
     }
     static void claim(Hand hand,Item item){for(Hand other:hands)if(other!=hand&&other.held==item)other.held=null;hand.held=item;}
     static boolean takeHotbar(){
@@ -297,17 +311,17 @@ public final class Vr {
     }
     static void activate(int i) {
         Hand h=hands[i];Player p=current.player;
+        if(h.held instanceof FusedBomb){lightBomb(h.held);pulse(h);return;}
         if(i==1&&takeHotbar())return;
         // A door or conversation takes priority over consuming/firing a held item.
         Entity nearest=target(h,false);
         if(nearest!=null){Vector3 dir=new Vector3(0,0,-1).rot(h.world).nor();nearest.use(p,dir.x,dir.z);pulse(h);return;}
-        if(h.held==null&&target(h,true)!=null){grab(i);return;}
+        if(h.held==null){Entity item=target(h,true);if(item!=null){pickup(i,(Item)item,false);return;}}
         if(h.held instanceof Bow){h.drawingBow=true;h.bowDraw=0;return;}
         if(h.held instanceof Wand||h.held instanceof Bow) {
             fire(h,1f);
             return;
         }
-        if(h.held instanceof FusedBomb){lightBomb(h.held);pulse(h);return;}
         if(h.held!=null&&!(h.held instanceof Weapon)){h.held.inventoryUse(p);return;}
     }
     static Entity target(Hand h,boolean items) {
