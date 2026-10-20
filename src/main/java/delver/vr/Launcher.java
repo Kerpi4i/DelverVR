@@ -39,6 +39,7 @@ public final class Launcher implements ApplicationListener {
         Vr.finish();
         if(Boolean.getBoolean("delver.vr.regression")&&frames==50)try{
             Class.forName("delver.vr.InteractionRegression").getMethod("run").invoke(null);
+            Class.forName("delver.vr.StairsRegression").getMethod("run").invoke(null);
             Class.forName("delver.vr.LadderRegression").getMethod("run").invoke(null);
             Class.forName("delver.vr.ItemUseRegression").getMethod("run").invoke(null);
             Class.forName("delver.vr.ShadowBatchRegression").getMethod("run").invoke(null);

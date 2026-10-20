@@ -8,7 +8,7 @@ New-Item -ItemType Directory -Force $game | Out-Null
 Copy-Item (Join-Path $GamePath 'delver.jar') $game
 # Test runtime is a read-only reference; installer only writes the sibling DelverVR directory.
 New-Item -ItemType Junction -Path (Join-Path $game 'jre-x64-windows') -Target (Join-Path $GamePath 'jre-x64-windows') | Out-Null
-$installer=Join-Path $root 'release/DelverVR-Setup-0.2.0-beta.3.exe'
+$installer=Join-Path $root 'release/DelverVR-Setup-0.2.0-beta.4.exe'
 $original=(Get-FileHash (Join-Path $game 'delver.jar')).Hash
 function Run-TestExe([string]$Exe,[string]$Arguments,[int]$Expected=0){
     $process=Start-Process -FilePath $Exe -ArgumentList $Arguments -WindowStyle Hidden -PassThru

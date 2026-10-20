@@ -26,6 +26,16 @@ public final class Targets {
         Vector3 hit=new Vector3();
         return Intersector.intersectRayBounds(new Ray(start,direction),aim,hit)&&start.dst2(hit)<=reach*reach?hit:null;
     }
+    /** Match the native stair picking sphere, while retaining its player distance limit. */
+    public static Vector3 stairContact(Stairs stairs,Player player,Vector3 start,Vector3 direction) {
+        float dx=player.x-stairs.x,dy=player.y-stairs.y;
+        if(dx*dx+dy*dy>1.1f*1.1f)return null;
+        Vector3 center=new Vector3(stairs.x,stairs.z-.5f,stairs.y);
+        float radius=stairs.collision.x/1.5f+.6f;
+        Vector3 hit=new Vector3();
+        if(start.dst2(center)<=radius*radius)return new Vector3(start);
+        return Intersector.intersectRaySphere(new Ray(start,direction),center,radius,hit)&&start.dst2(hit)<=6.25f?hit:null;
+    }
     public static Array<Entity> all(Level level,Object renderer) {
         Array<Entity> result=new Array<Entity>();
         Set<Object> seen=Collections.newSetFromMap(new IdentityHashMap<Object,Boolean>());
@@ -38,7 +48,7 @@ public final class Targets {
         if(o==null||!seen.add(o))return;
         if(o instanceof Entity){out.add((Entity)o);return;}
         if(o instanceof Array){for(Object e:(Array<?>)o)collect(e,out,seen);return;}
-        for(String name:new String[]{"entities","static_entities","non_collidable_entities","overworldChunk"})collect(field(o,name),out,seen);
+        for(String name:new String[]{"entities","static_entities","non_collidable_entities","overworldChunk","up","down"})collect(field(o,name),out,seen);
     }
     private static Object field(Object o,String name) {
         for(Class<?> c=o.getClass();c!=null;c=c.getSuperclass())try{Field f=c.getDeclaredField(name);f.setAccessible(true);return f.get(o);}catch(NoSuchFieldException ignored){}catch(IllegalAccessException e){throw new IllegalStateException(e);}

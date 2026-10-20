@@ -21,7 +21,7 @@ cause substantial frame drops.
 
 ## Install
 
-1. Download `DelverVR-Setup-0.2.0-beta.3.exe` from Releases and run it.
+1. Download `DelverVR-Setup-0.2.0-beta.4.exe` from Releases and run it.
 2. Select the **game folder containing `delver.jar`**, for example
    `C:\Program Files (x86)\Steam\steamapps\common\Delver`.
 3. Install. The installer creates a `DelverVR` subfolder and generates patches
@@ -43,6 +43,8 @@ Use this repository's Releases and verify the file against `SHA256SUMS.txt`.
 The VR shortcut option can vary by Steam client version. The same EXE also
 works directly with SteamVR running. This non-Steam shortcut does not enable
 Steam achievements or Workshop API integration.
+
+To change floors, stand near the stairs, point a controller at them and press the index trigger.
 
 ## Touch controls
 

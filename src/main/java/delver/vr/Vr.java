@@ -329,7 +329,7 @@ public final class Vr {
         Entity best=null;float distance=Float.MAX_VALUE;
         for(Entity e:interactionEntities){
             if(e==current.player||!e.isActive||(items?(!(e instanceof Item)||e.hidden):(e instanceof Item||!Targets.usable(e))))continue;
-            Vector3 hit=Targets.contact(Targets.bounds(current.level,e),h.pos,direction,.16f,.85f);
+            Vector3 hit=e instanceof Stairs?Targets.stairContact((Stairs)e,current.player,h.pos,direction):Targets.contact(Targets.bounds(current.level,e),h.pos,direction,.16f,.85f);
             if(hit==null||!clear(h.pos,hit))continue;
             float d=hit.dst2(h.pos);if(d<distance){distance=d;best=e;}
         }

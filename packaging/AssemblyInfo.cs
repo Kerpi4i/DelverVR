@@ -4,5 +4,5 @@ using System.Reflection;
 [assembly: AssemblyCompany("Kerpi4i / Delver VR contributors")]
 [assembly: AssemblyCopyright("Copyright 2026 Kerpi4i and contributors")]
 [assembly: AssemblyVersion("0.2.0.0")]
-[assembly: AssemblyFileVersion("0.2.0.3")]
-[assembly: AssemblyInformationalVersion("0.2.0-beta.3")]
+[assembly: AssemblyFileVersion("0.2.0.4")]
+[assembly: AssemblyInformationalVersion("0.2.0-beta.4")]

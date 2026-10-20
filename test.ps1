@@ -26,3 +26,5 @@ if(!(Select-String -Path dist/smoke.log -Pattern 'ITEM USE PASS')){throw 'Bomb/i
 if((Select-String -Path dist/smoke.log -Pattern 'SHADOW BATCH PASS').Count -ne 2){throw 'Shadow batch regressions did not finish'}
 Get-Content dist/smoke.log -Tail 3
 
+
+if(!(Select-String -Path dist/smoke.log -Pattern 'STAIRS PASS')){throw 'Stair regressions did not finish'}
