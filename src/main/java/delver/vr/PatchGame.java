@@ -58,7 +58,7 @@ public final class PatchGame {
         renderer.getDeclaredMethod("startFrame").insertBefore("delver.vr.Vr.bindEye(); com.badlogic.gdx.Gdx.gl.glDepthMask(true);");
         // The desktop mirror disables depth after the stereo pair, whereas hands
         // leave it enabled between eyes. Sky planes must not inherit either state.
-        renderer.getDeclaredMethod("renderSkybox").insertBefore("com.badlogic.gdx.Gdx.gl.glDisable(com.badlogic.gdx.graphics.GL20.GL_DEPTH_TEST); com.badlogic.gdx.Gdx.gl.glDepthMask(false);");
+        renderer.getDeclaredMethod("renderSkybox").insertBefore("com.badlogic.gdx.Gdx.gl.glDepthMask(true); com.badlogic.gdx.Gdx.gl.glClearDepthf(1f); com.badlogic.gdx.Gdx.gl.glClear(com.badlogic.gdx.graphics.GL20.GL_DEPTH_BUFFER_BIT); com.badlogic.gdx.Gdx.gl.glEnable(com.badlogic.gdx.graphics.GL20.GL_DEPTH_TEST); com.badlogic.gdx.Gdx.gl.glDepthFunc(com.badlogic.gdx.graphics.GL20.GL_LEQUAL);");
         renderer.getDeclaredMethod("renderSkybox").insertAfter("com.badlogic.gdx.Gdx.gl.glDepthMask(true); com.badlogic.gdx.Gdx.gl.glEnable(com.badlogic.gdx.graphics.GL20.GL_DEPTH_TEST); com.badlogic.gdx.Gdx.gl.glDepthFunc(com.badlogic.gdx.graphics.GL20.GL_LEQUAL);",true);
         renderer.getDeclaredMethod("renderStencilPass").insertBefore("$1=delver.vr.ShadowBatch.prepare($1);");
         renderer.getDeclaredMethod("Render").instrument(new ExprEditor(){

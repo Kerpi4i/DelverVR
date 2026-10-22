@@ -72,7 +72,7 @@ internal static class Setup {
             Directory.Delete(generated,true);
             File.WriteAllText(Path.Combine(stage,"game.sha256"),actual);
             File.WriteAllText(Path.Combine(stage,".delver-vr-install"),Marker);
-            File.WriteAllText(Path.Combine(stage,"version.txt"),"0.2.1");
+            File.WriteAllText(Path.Combine(stage,"version.txt"),"0.2.2");
             var files=Directory.GetFiles(stage,"*",SearchOption.AllDirectories).Select(f=>f.Substring(stage.Length+1)).Concat(new[]{"installed-files.txt"}).Distinct().ToArray();
             File.WriteAllLines(Path.Combine(stage,"installed-files.txt"),files);
             if(Directory.Exists(destination)){

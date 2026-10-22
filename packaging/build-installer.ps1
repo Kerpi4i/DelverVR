@@ -38,12 +38,12 @@ try {
     Add-Type -AssemblyName System.IO.Compression.FileSystem
     $zip=Join-Path $releaseRoot 'payload.zip'
     [System.IO.Compression.ZipFile]::CreateFromDirectory($payload,$zip,[System.IO.Compression.CompressionLevel]::Optimal,$false)
-    $output=Join-Path $root 'release/DelverVR-Setup-0.2.1.exe'
+    $output=Join-Path $root 'release/DelverVR-Setup-0.2.2.exe'
     & $csc @common @compression "/resource:$zip,payload.zip" "/out:$output" (Join-Path $PSScriptRoot 'Setup.cs') (Join-Path $PSScriptRoot 'AssemblyInfo.cs')
     if($LASTEXITCODE){throw 'Installer compilation failed'}
     & python packaging/verify-release.py $zip
     if($LASTEXITCODE){throw 'Installer payload verification failed'}
     $hash=(Get-FileHash $output -Algorithm SHA256).Hash.ToLowerInvariant()
-    "$hash  DelverVR-Setup-0.2.1.exe" | Set-Content -Encoding ascii release/SHA256SUMS.txt
+    "$hash  DelverVR-Setup-0.2.2.exe" | Set-Content -Encoding ascii release/SHA256SUMS.txt
     Write-Host "Built $output"
 }finally{Pop-Location}

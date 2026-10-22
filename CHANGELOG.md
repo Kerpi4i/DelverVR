@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.2 — 2026-10-22
+
+- Correct 0.2.1 sky rendering: restore native depth-tested sky geometry with a fresh depth buffer for each eye, instead of disabling depth.
+- Compare both inherited eye states against an independent native mesh render with depth testing; equality between eyes alone was insufficient.
+- Headset verification remains required after updating.
+
+
 ## 0.2.1 — 2026-10-22
 
 - Make sky rendering independent of inherited depth-test/write state between eyes. Stars and moon planes render without sky self-occlusion; depth state is restored before the world pass.

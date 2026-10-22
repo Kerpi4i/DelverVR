@@ -21,7 +21,7 @@ cause substantial frame drops.
 
 ## Install
 
-1. Download `DelverVR-Setup-0.2.1.exe` from Releases and run it.
+1. Download `DelverVR-Setup-0.2.2.exe` from Releases and run it.
 2. Select the **game folder containing `delver.jar`**, for example
    `C:\Program Files (x86)\Steam\steamapps\common\Delver`.
 3. Install. The installer creates a `DelverVR` subfolder and generates patches
@@ -114,7 +114,7 @@ Interrupt. This mod is not endorsed by Priority Interrupt, Valve or Meta.
 
 ## VR settings
 
-Version `0.2.1` is prepared locally; publication is separate. Options > VR controls hand models and separate map/hotbar visibility: Always visible, While held, Toggle. Default is While held for both.
+Version `0.2.2` is prepared locally; publication is separate. Options > VR controls hand models and separate map/hotbar visibility: Always visible, While held, Toggle. Default is While held for both.
 
 A controls the right wrist map; X controls the left wrist hotbar. Y opens/closes inventory, B opens pause, right stick click recenters. Left stick moves/climbs, right stick turns. Grip grabs/releases items, trigger collects/uses items and clicks UI; a held bomb ignites with trigger. Hotbar slots accept near touch or pointing followed by grip/trigger. Throw with a releasing swing; release near the body to store. Bow uses the other hand to draw, then trigger release.
 
