@@ -21,7 +21,7 @@ cause substantial frame drops.
 
 ## Install
 
-1. Download `DelverVR-Setup-0.2.0-beta.5.exe` from Releases and run it.
+1. Download `DelverVR-Setup-0.2.0.exe` from Releases and run it.
 2. Select the **game folder containing `delver.jar`**, for example
    `C:\Program Files (x86)\Steam\steamapps\common\Delver`.
 3. Install. The installer creates a `DelverVR` subfolder and generates patches
@@ -50,19 +50,19 @@ To change floors, stand near the stairs, point a controller at them and press th
 
 | Action | Control |
 |---|---|
-| Walk in head-facing direction | Left stick |
+| Walk / climb | Left stick; sideways to dismount ladder |
 | Snap turn | Right stick left/right |
-| Open inventory | BAG beside left-arm hotbar; right grip/trigger |
-| Menu/inventory pointer | Right ray; trigger to click, hold and move to drag |
-| Grab nearby item / hotbar slot | Grip |
-| Collect a ground item into inventory | Trigger |
-| Store / throw | Release grip near body / during a throwing swing |
-| Use item / weapon | Trigger; tracked swings for melee |
-| Bomb in hand | Trigger lights fuse; throwing uses the original item behavior |
+| Recenter | Right stick click |
+| Map | A (visibility mode in Options > VR) |
+| Hotbar | X (visibility mode in Options > VR) |
+| Inventory / close inventory | Y |
+| Pause menu | B |
+| Grab / release item | Grip; release near body to store, swing to throw |
+| Collect / use / ignite held bomb | Trigger |
+| Inventory pointer | Right ray; trigger to click or hold and drag |
+| Select wrist slot | Point or touch, then grip / trigger |
 | Bow | Hold bow, draw with other hand, release trigger |
-| Ladder | Left stick forward/back while touching ladder; sideways to dismount |
-| Pause / close inventory | Left X/menu action |
-| Recenter | Right A |
+
 
 ## Saves, updates and uninstall
 
@@ -111,3 +111,23 @@ cannot build against proprietary game data without a user-supplied copy.
 See [CONTRIBUTING.md](CONTRIBUTING.md) and [third-party notices](packaging/THIRD-PARTY.md).
 Original mod code is MIT licensed; Delver and its assets belong to Priority
 Interrupt. This mod is not endorsed by Priority Interrupt, Valve or Meta.
+
+## VR settings
+
+Version `0.2.0` is prepared locally; publication is separate. Options > VR controls hand models and separate map/hotbar visibility: Always visible, While held, Toggle. Default is While held for both.
+
+A controls the right wrist map; X controls the left wrist hotbar. Y opens/closes inventory, B opens pause, right stick click recenters. Left stick moves/climbs, right stick turns. Grip grabs/releases items, trigger collects/uses items and clicks UI; a held bomb ignites with trigger. Hotbar slots accept near touch or pointing followed by grip/trigger. Throw with a releasing swing; release near the body to store. Bow uses the other hand to draw, then trigger release.
+
+Inventory keeps native slots, equipment and item tooltips, with a fitted rounded background and active effect durations. Wrist hotbar shows compact item slots and hearts without BAG, numeric HP or other player stats. Map has a subtle border and dark background closer to the wrist.
+
+### Steam Workshop content
+
+Subscribe in Steam and let downloads finish, then restart Delver VR. The PC mod reads installed Workshop content for Delver (app 249630) across Steam libraries, plus the game's `mods` folder. No manual copying is needed. Use the native main-menu Mods screen to enable/disable content; these choices belong to the VR save profile. Point at the list and use the right stick up/down to scroll.
+
+Steam handles subscriptions/downloads. This integration reads installed content without requiring the game's Steam API. It does not enable Steam achievements or distribute Workshop content. Native content-mod loading and override rules are retained; individual mod combinations and VR-specific gameplay still need testing. Quest standalone does not discover PC Steam libraries.
+
+The wrist hotbar uses one compact row close to the wrist.
+
+Local beta.9 also restores native USE fallback from head aiming and special interactive tiles, alongside controller targeting. Mod trigger groups/attachments are included. The dynamic-light budget is ranked by brightness/range attenuation to avoid tiny nearby decorative sources displacing room lights. This changes selection rather than the authored light radii; headset checks of the reported mod rooms are still required.
+
+Local beta.10: inventory panel bounds follow current player capacity instead of cached HUD dimensions. Native limits verified: 36 backpack slots plus 10 hotbar slots, 46 total; maximum backpack is six rows of six. Native upgrade paths and 114 backpack/hotbar size combinations are covered by runtime checks, including equipment bounds and added effect-list height.

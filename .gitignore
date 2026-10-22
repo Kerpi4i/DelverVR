@@ -15,3 +15,6 @@ PowerShell*/
 *.user
 *.pfx
 *.pem
+
+# Private local save backups
+/backups/

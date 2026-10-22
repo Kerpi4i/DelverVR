@@ -27,14 +27,14 @@ public final class WristMap {
         float left=(g.player.x-9.5f)*4/map.getWidth(),top=(g.player.y-9.5f)*4/map.getHeight();
         region.setRegion(left,top,left+80f/map.getWidth(),top+80f/map.getHeight());
         buffer.begin();Gdx.gl.glDisable(GL20.GL_DEPTH_TEST);Gdx.gl.glClearColor(0,0,0,0);Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        SpriteBatch b=Vr.sprites;com.badlogic.gdx.graphics.glutils.ShaderProgram previous=b.getShader();b.setShader(transparentMap);b.setProjectionMatrix(new Matrix4().setToOrtho2D(0,0,256,256));b.begin();b.setColor(Color.WHITE);b.draw(region,6,6,244,244);b.end();b.setShader(previous);b.begin();
+        SpriteBatch b=Vr.sprites;com.badlogic.gdx.graphics.glutils.ShaderProgram previous=b.getShader();b.setShader(transparentMap);b.setProjectionMatrix(new Matrix4().setToOrtho2D(0,0,256,256));b.begin();b.setShader(previous);RoundedPanel.draw(b,0,0,256,256,.42f,.5f,.52f,.7f);RoundedPanel.draw(b,2,2,252,252,.025f,.035f,.045f,.7f);b.setShader(transparentMap);b.setColor(Color.WHITE);b.draw(region,6,6,244,244);b.end();b.setShader(previous);b.begin();
         b.setColor(.4f,.95f,.8f,1);b.draw(arrow,118,118,10,10,20,20,1,1,g.player.rot*MathUtils.radiansToDegrees+180,0,0,16,16,false,false);
         Vr.font.setColor(Color.WHITE);Vr.font.draw(b,"N",123,248);b.end();b.setColor(Color.WHITE);buffer.end();
     }
     void draw(){if(buffer==null||!Vr.hands[1].valid)return;
         float sleeve=HandRig.sleeveLength(WristHotbar.count(Vr.current.player));
-        Matrix4 frame=new Matrix4(Vr.hands[1].world).translate(0,HandRig.TOP+.007f,HandRig.PALM_LENGTH+sleeve*.5f).rotate(Vector3.X,-90).rotate(Vector3.Z,-90);
-        Decal d=Decal.newDecal(.19f*Vr.SCALE,.19f*Vr.SCALE,Vr.framebufferRegion(buffer.getColorBufferTexture()),true);
+        Matrix4 frame=new Matrix4(Vr.hands[1].world).translate(.025f,HandRig.TOP+.025f,HandRig.PALM_LENGTH+.025f).rotate(Vector3.X,-90).rotate(Vector3.Z,-90);
+        Decal d=Decal.newDecal(.16f*Vr.SCALE,.16f*Vr.SCALE,Vr.framebufferRegion(buffer.getColorBufferTexture()),true);
         d.setPosition(frame.getTranslation(new Vector3()));d.setRotation(frame.getRotation(new Quaternion(),true));Vr.wristDecals.add(d);
     }
     void dispose(){if(buffer!=null)buffer.dispose();if(arrow!=null)arrow.dispose();if(transparentMap!=null)transparentMap.dispose();}

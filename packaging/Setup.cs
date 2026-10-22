@@ -37,6 +37,16 @@ internal static class Setup {
         string prefix=Path.GetFullPath(game).TrimEnd('\\')+"\\DelverVR.installing-";
         if(Path.GetFullPath(stage).StartsWith(prefix,StringComparison.OrdinalIgnoreCase)&&Directory.Exists(stage))Directory.Delete(stage,true);
     }
+    // A virus scanner or sync client can briefly hold a freshly extracted folder.
+    // Retry atomic directory renames; retain the original rollback behavior.
+    static void MoveDirectory(string source,string target){
+        for(int attempt=0;;attempt++){
+            try{Directory.Move(source,target);return;}
+            catch(IOException){if(attempt>=7)throw;}
+            catch(UnauthorizedAccessException){if(attempt>=7)throw;}
+            System.Threading.Thread.Sleep(150*(attempt+1));
+        }
+    }
     internal static string Install(string selected){
         string game=Path.GetFullPath(selected).TrimEnd('\\');
         string original=Path.Combine(game,"delver.jar"),java=Path.Combine(game,"jre-x64-windows","bin","java.exe");
@@ -62,15 +72,15 @@ internal static class Setup {
             Directory.Delete(generated,true);
             File.WriteAllText(Path.Combine(stage,"game.sha256"),actual);
             File.WriteAllText(Path.Combine(stage,".delver-vr-install"),Marker);
-            File.WriteAllText(Path.Combine(stage,"version.txt"),"0.2.0-beta.5");
+            File.WriteAllText(Path.Combine(stage,"version.txt"),"0.2.0");
             var files=Directory.GetFiles(stage,"*",SearchOption.AllDirectories).Select(f=>f.Substring(stage.Length+1)).Concat(new[]{"installed-files.txt"}).Distinct().ToArray();
             File.WriteAllLines(Path.Combine(stage,"installed-files.txt"),files);
             if(Directory.Exists(destination)){
                 string backup=Path.Combine(game,"DelverVR.backup-"+Guid.NewGuid().ToString("N"));
-                Directory.Move(destination,backup);
-                try{Directory.Move(stage,destination);}catch{Directory.Move(backup,destination);throw;}
+                MoveDirectory(destination,backup);
+                try{MoveDirectory(stage,destination);}catch{MoveDirectory(backup,destination);throw;}
                 Log("Previous VR installation retained at "+backup);
-            }else Directory.Move(stage,destination);
+            }else MoveDirectory(stage,destination);
             Log("Installed "+destination+"; original game SHA256 "+actual);
             return Path.Combine(destination,"DelverVR.exe");
         }finally{RemoveStage(game,stage);}

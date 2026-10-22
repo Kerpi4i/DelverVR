@@ -70,13 +70,14 @@ public final class Vr {
         final Vector3 throwVelocity=new Vector3();
         final VRControllerState state=VRControllerState.calloc();
         final Set<Entity> hit=Collections.newSetFromMap(new IdentityHashMap<Entity,Boolean>());
-        boolean valid, wasValid, grip, oldGrip, trigger, oldTrigger, button, oldButton, swinging, drawingBow;
+        boolean valid, wasValid, grip, oldGrip, trigger, oldTrigger, button, oldButton, secondary, oldSecondary, stickClick, oldStickClick, swinging, drawingBow;
         float bowDraw;
         int device=-1; float stickX,stickY,speed;
         Item held;
     }
 
     public static void init() {
+        VrSettings.load();
         try(MemoryStack s=MemoryStack.stackPush()) {
             if(!SIMULATE) {
             IntBuffer error=s.callocInt(1);
@@ -123,9 +124,8 @@ public final class Vr {
         if(SIMULATE)head.idt().translate(0,1.65f,0);else head.set(matrix(poses.get(0).mDeviceToAbsoluteTracking()));
         if(!calibrated||Gdx.input.isKeyJustPressed(Input.Keys.F2)) recenter();
         for(int i=0;i<2;i++) readHand(i);
-        boolean pressed=hands[0].valid&&((hands[0].state.ulButtonPressed()&(1L<<EVRButtonId_k_EButton_ApplicationMenu))!=0||hands[0].button);
-        if(pressed&&!menuPressed)togglePause();menuPressed=pressed;
         current=GameManager.getGame();
+        handleButtons();
         NativeUi.update();
         com.interrupt.dungeoneer.GameApplication app=com.interrupt.dungeoneer.GameApplication.instance;
         if(app!=null&&app.getScreen()==app.mainScreen&&current!=null&&current.player!=null&&current.level!=null) {
@@ -133,12 +133,18 @@ public final class Vr {
             updateGame();
         }
     }
+    static void handleButtons(){
+        VrSettings.buttons();
+        if(hands[1].valid&&hands[1].secondary&&!hands[1].oldSecondary)togglePause();
+        if(hands[0].valid&&hands[0].secondary&&!hands[0].oldSecondary&&current!=null&&current.player!=null&&com.interrupt.dungeoneer.overlays.OverlayManager.instance.current()==null)pToggleInventory();
+        if(hands[1].valid&&hands[1].stickClick&&!hands[1].oldStickClick)recenter();
+    }
     static void togglePause(){
         com.interrupt.dungeoneer.overlays.OverlayManager overlays=com.interrupt.dungeoneer.overlays.OverlayManager.instance;
         if(overlays.current() instanceof com.interrupt.dungeoneer.overlays.PauseOverlay)overlays.pop();
         else {
             Game game=GameManager.getGame();if(game==null||game.player==null)return;
-            if(game.getShowingMenu()){game.hideMenu();NativeUi.cancelClick();NativeUi.update();return;}
+            if(game.getShowingMenu()){game.hideMenu();NativeUi.cancelClick();NativeUi.update();}
             overlays.push(new com.interrupt.dungeoneer.overlays.PauseOverlay());
         }
         NativeUi.update();
@@ -163,26 +169,27 @@ public final class Vr {
         stepSmoothing.tick(dt);
     }
     static void readHand(int i) {
-        Hand h=hands[i];h.oldGrip=h.grip;h.oldTrigger=h.trigger;h.oldButton=h.button;
+        Hand h=hands[i];h.oldGrip=h.grip;h.oldTrigger=h.trigger;h.oldButton=h.button;h.oldSecondary=h.secondary;h.oldStickClick=h.stickClick;
         if(SIMULATE){h.valid=true;if(i==0)h.local.idt().translate(-.05f,1.35f,-.5f).rotate(Vector3.Z,-90).rotate(Vector3.X,90);else h.local.idt().translate(.25f,1.25f,-.4f);return;}
         h.device=VRSystem_GetTrackedDeviceIndexForControllerRole(i==0?ETrackedControllerRole_TrackedControllerRole_LeftHand:ETrackedControllerRole_TrackedControllerRole_RightHand);
         h.valid=h.device>=0&&h.device<poses.capacity()&&poses.get(h.device).bPoseIsValid()&&poses.get(h.device).bDeviceIsConnected();
-        if(!h.valid||!VRSystem_GetControllerState(h.device,h.state)){h.valid=false;h.grip=false;h.trigger=false;h.button=false;h.stickX=h.stickY=0;h.wasValid=false;return;}
+        if(!h.valid||!VRSystem_GetControllerState(h.device,h.state)){h.valid=false;h.grip=false;h.trigger=false;h.button=h.secondary=h.stickClick=false;h.stickX=h.stickY=0;h.wasValid=false;return;}
         h.local.set(matrix(poses.get(h.device).mDeviceToAbsoluteTracking()));
         long b=h.state.ulButtonPressed();
         h.grip=h.state.rAxis(2).x()>.55f||(b&(1L<<EVRButtonId_k_EButton_Grip))!=0;
         h.trigger=h.state.rAxis(1).x()>.65f||(b&(1L<<EVRButtonId_k_EButton_SteamVR_Trigger))!=0;
         h.button=(b&(1L<<EVRButtonId_k_EButton_A))!=0;
+        h.secondary=(b&(1L<<EVRButtonId_k_EButton_ApplicationMenu))!=0;
+        h.stickClick=(b&(1L<<EVRButtonId_k_EButton_SteamVR_Touchpad))!=0;
         h.stickX=h.state.rAxis(0).x();h.stickY=h.state.rAxis(0).y();
     }
     static float dead(float x){return Math.abs(x)<.18f?0:x;}
     static void updateGame() {
         Player p=current.player;
-        if(p.isDead||current.gameOver||com.interrupt.dungeoneer.overlays.OverlayManager.instance.current()!=null)return;
+        if(p.isDead||current.gameOver||pMenu()||com.interrupt.dungeoneer.overlays.OverlayManager.instance.current()!=null)return;
         cooldown=Math.max(0,cooldown-dt);
         if(hands[1].valid&&Math.abs(hands[1].stickX)>.7f&&!turnLatch){yaw-=Math.signum(hands[1].stickX)*30;turnLatch=true;}
         if(Math.abs(hands[1].stickX)<.3f)turnLatch=false;
-        if(hands[1].button&&!hands[1].oldButton)recenter();
         Vector3 hp=head.getTranslation(new Vector3());
         Vector3 room=new Vector3(hp.x-reference.x,0,hp.z-reference.z).scl(SCALE).rotate(Vector3.Y,yaw);
         if(!pMenu())move(p,room.x,room.z);
@@ -256,9 +263,8 @@ public final class Vr {
     }
     static void claim(Hand hand,Item item){for(Hand other:hands)if(other!=hand&&other.held==item)other.held=null;hand.held=item;}
     static boolean takeHotbar(){
-        if(!hands[0].valid||!hands[1].valid)return false;
-        Player p=current.player;int slot=WristHotbar.hover(hands[0].world,hands[1].pos,WristHotbar.count(p));
-        if(WristHotbar.inventoryButton(hands[0].world,hands[1].pos,WristHotbar.count(p))){pToggleInventory();pulse(hands[1]);return true;}
+        if(!hands[0].valid||!hands[1].valid||!VrSettings.showHotbar())return false;
+        Player p=current.player;int slot=WristHotbar.aim(hands[0].world,hands[1].world,hands[1].pos,WristHotbar.count(p));
         if(slot<0)return false;
         Item item=p.inventory.get(slot);
         if(item==null){hands[1].held=null;p.ChangeHeldItem(null,false);}
@@ -270,7 +276,7 @@ public final class Vr {
         Hand h=hands[i];Player p=current.player;Item item=h.held;
         // Releasing at the chest/backpack stores the actual inventory item.
         Vector3 chest=new Vector3(0,-.22f,.10f).mul(new Matrix4(origin).mul(head));
-        boolean atHotbar=i==1&&hands[0].valid&&WristHotbar.hover(hands[0].world,h.pos,WristHotbar.count(p))>=0;
+        boolean atHotbar=i==1&&hands[0].valid&&VrSettings.showHotbar()&&WristHotbar.hover(hands[0].world,h.pos,WristHotbar.count(p))>=0;
         float speed=h.throwVelocity.len()/SCALE;boolean throwing=speed>.8f;
         if(pMenu()||atHotbar||(!throwing&&h.pos.dst(chest)<.22f)){h.held=null;pulse(h);return;}
         if(!clear(new Vector3(p.x,p.z+p.eyeHeight,p.y),h.pos)){h.held=null;return;}
@@ -290,6 +296,7 @@ public final class Vr {
         Entity nearest=target(h,false);
         if(nearest!=null){Vector3 dir=new Vector3(0,0,-1).rot(h.world).nor();nearest.use(p,dir.x,dir.z);pulse(h);return;}
         {Entity item=target(h,true);if(item!=null){pickup(i,(Item)item,false);return;}}
+        if(NativeUse.activate()){pulse(h);return;}
         if(h.held instanceof Bow){h.drawingBow=true;h.bowDraw=0;return;}
         if(h.held instanceof Wand||h.held instanceof Bow) {
             fire(h,1f);
@@ -353,7 +360,7 @@ public final class Vr {
             for(Hand h:hands)if(h.valid){h.world.set(origin).mul(h.local);h.world.getTranslation(h.pos);h.tip.set(HeldVisual.tip(h.world,h.held));}
         }
         if(hands[0].valid)hotbar.prepare(g.player);
-        if(hands[1].valid)wristMap.prepare(r,g);
+        if(hands[1].valid&&VrSettings.showMap())wristMap.prepare(r,g);
         Options.instance.headBobEnabled=false;
         float clock=GlRenderer.time;
         float[] firstLights=null,firstColors=null;
@@ -372,8 +379,8 @@ public final class Vr {
         finally {eye=-1;RenderPreparation.end();}
         if(g.getShowingMenu())try{
             if(nativeUiFrame.getWidth()!=Gdx.graphics.getWidth()||nativeUiFrame.getHeight()!=Gdx.graphics.getHeight()){nativeUiFrame.dispose();nativeUiFrame=new FrameBuffer(Pixmap.Format.RGBA8888,Gdx.graphics.getWidth(),Gdx.graphics.getHeight(),false);}
-            nativeUiFrame.begin();Gdx.gl.glDisable(GL20.GL_DEPTH_TEST);Gdx.gl.glClearColor(.01f,.014f,.02f,.58f);Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-            try{drawNativeUi.invoke(r);}finally{nativeUiFrame.end();}
+            nativeUiFrame.begin();Gdx.gl.glDisable(GL20.GL_DEPTH_TEST);Gdx.gl.glClearColor(0,0,0,0);Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+            try{InventoryPanel.background();drawNativeUi.invoke(r);InventoryPanel.effects();}finally{nativeUiFrame.end();}
         }catch(Exception e){throw new RuntimeException("Native inventory rendering failed",e);}
     }
     public static boolean secondEye(){return eye==1;}
@@ -401,7 +408,7 @@ public final class Vr {
         // Alpha-zero sprite pixels must not write invisible occluders into depth.
         Gdx.gl.glDepthMask(false);decals.flush();Gdx.gl.glDepthMask(true);
         if(wristDecals==null){wristStrategy=new WristGroupStrategy(activeCamera);wristDecals=new DecalBatch(wristStrategy);}else wristStrategy.setCamera(activeCamera);
-        hotbar.draw(current.player);wristMap.draw();wristDecals.flush();
+        if(!pMenu()&&com.interrupt.dungeoneer.overlays.OverlayManager.instance.current()==null){if(VrSettings.showHotbar())hotbar.draw(current.player);if(VrSettings.showMap())wristMap.draw();}wristDecals.flush();
     }
     static void useDecals(com.badlogic.gdx.graphics.Camera camera){if(decals==null){decalStrategy=new CameraGroupStrategy(camera);decals=new DecalBatch(decalStrategy);}else decalStrategy.setCamera(camera);}
     public static void finish() {
@@ -445,7 +452,7 @@ public final class Vr {
         ShadowBatch.dispose();
         postProcessing.dispose();
         hotbar.dispose();
-        wristMap.dispose();
+        wristMap.dispose();RoundedPanel.dispose();
         if(nativeUiFrame!=null)nativeUiFrame.dispose();
         blockHands.dispose();
         if(wristDecals!=null)wristDecals.dispose();

@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.0 — 2026-10-22
+
+- Add Options > VR, hand models, independent wrist map/hotbar visibility and Touch controls.
+- Refine one-row hotbar, map and native inventory with equipment, timed effects and rounded backing that follows upgrades up to 36 backpack plus 10 hotbar slots.
+- Load installed Steam Workshop content across libraries with native Mods selection.
+- Restore native gaze/tile interaction and nested triggers; visible touch teleport markers accept controller USE while hidden automatic triggers remain excluded.
+- Rank dynamic lights by brightness and range. Reported Workshop rooms still require headset verification.
+- Retain native bomb fuse/wet rules, ignition, pickup and throwing.
+- Verify runtime regressions and installer lifecycle. Teleport fix awaits headset retest after updating.
+
+
 ## 0.2.0-beta.3 — 2026-10-20
 
 - Fix bomb loss after pickup: inventory items being inactive in the world are

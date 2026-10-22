@@ -15,6 +15,7 @@ public final class NativeUi {
     static final Vector3 pointerPoint=new Vector3();
     static boolean active,down,inside,waitRelease,inventoryShown;
     static int x,y;
+    private static float scrollWait;
     private static Input proxyInput;
     static void install(){
         if(proxyInput!=null){Gdx.input=proxyInput;return;}
@@ -63,6 +64,8 @@ public final class NativeUi {
             inside=t>0&&Math.abs(point.x)<=1.2f&&Math.abs(point.y)<=.675f;
             if(inside){x=(int)((point.x+1.2f)/2.4f*Gdx.graphics.getWidth());y=(int)((.675f-point.y)/1.35f*Gdx.graphics.getHeight());}
         }
+        scrollWait=Math.max(0,scrollWait-Vr.dt);
+        if(input!=null&&inside&&Math.abs(h.stickY)>.6f&&scrollWait==0){input.scrolled(h.stickY>0?-1:1);scrollWait=.16f;}
         if(input!=null){
             if(inside){input.mouseMoved(x,y);if(down&&h.trigger)input.touchDragged(x,y,0);}
             if(!waitRelease&&inside&&h.trigger&&!h.oldTrigger){down=true;input.touchDown(x,y,0,0);}

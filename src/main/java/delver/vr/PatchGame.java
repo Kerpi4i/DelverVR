@@ -10,6 +10,11 @@ public final class PatchGame {
         ClassPool cp = ClassPool.getDefault();
         cp.insertClassPath(args[0]);
         cp.insertClassPath(args[1]);
+        CtClass options=cp.get("com.interrupt.dungeoneer.overlays.OptionsOverlay");
+        options.getDeclaredMethod("makeContent").insertAfter("delver.vr.VrOptionsOverlay.add(this,$_);");
+        options.writeFile(args[2]);
+        CtClass mods=cp.get("com.interrupt.dungeoneer.game.ModManager");
+        mods.getDeclaredMethod("findMods").insertAfter("delver.vr.Workshop.append(this.allMods);");mods.writeFile(args[2]);
         CtClass actor=cp.get("com.interrupt.dungeoneer.entities.Actor");
         actor.getDeclaredMethod("stepUp").insertBefore("delver.vr.Vr.onStep(this,$1);");
         actor.writeFile(args[2]);
@@ -43,7 +48,13 @@ public final class PatchGame {
             }
         });
         renderer.addMethod(CtNewMethod.make("public void render(com.interrupt.dungeoneer.game.Game g) { delver.vr.Vr.renderScene(this,g); }", renderer));
-        renderer.addMethod(CtNewMethod.make("public void vrDrawNativeUi() { drawUI(); }",renderer));
+        renderer.addMethod(CtNewMethod.make("public void vrDrawNativeUi() { "
+            +"com.badlogic.gdx.Gdx.gl.glDisable(com.badlogic.gdx.graphics.GL20.GL_CULL_FACE); uiBatch.setProjectionMatrix(camera2D.combined); "
+            +"com.interrupt.dungeoneer.game.Game.hudManager.backpack.yOffset=1.7f; "
+            +"drawInventory(com.interrupt.dungeoneer.game.Game.hudManager.quickSlots); drawInventory(com.interrupt.dungeoneer.game.Game.hudManager.backpack); drawInventory(com.interrupt.dungeoneer.game.Game.hud.equipLocations); "
+            +"com.interrupt.dungeoneer.game.Game.ui.draw(); "
+            +"com.interrupt.dungeoneer.entities.Item hovered=com.interrupt.dungeoneer.game.Game.hud.getMouseOverItem(); "
+            +"if(hovered!=null){ uiBatch.begin(); com.interrupt.dungeoneer.game.Game.tooltip.show((float)com.badlogic.gdx.Gdx.input.getX(),(float)(com.badlogic.gdx.Gdx.graphics.getHeight()-com.badlogic.gdx.Gdx.input.getY()),hovered);uiBatch.end(); } else com.interrupt.dungeoneer.game.Game.tooltip.hide(); }",renderer));
         renderer.getDeclaredMethod("startFrame").insertBefore("delver.vr.Vr.bindEye();");
         renderer.getDeclaredMethod("renderStencilPass").insertBefore("$1=delver.vr.ShadowBatch.prepare($1);");
         renderer.getDeclaredMethod("Render").instrument(new ExprEditor(){
@@ -66,7 +77,7 @@ public final class PatchGame {
             }
         });
         renderer.getDeclaredMethod("updateDynamicLights").setBody("{"+
-            "if(!delver.vr.Vr.secondEye()) { com.badlogic.gdx.math.Vector3 old=new com.badlogic.gdx.math.Vector3($1.position); delver.vr.Vr.lightSortPosition($1.position); usedLightPool.sort(this.lightSorter); $1.position.set(old); }"+
+            "if(!delver.vr.Vr.secondEye()) { delver.vr.LightSelection.sort(usedLightPool,$1.position); }"+
             "java.util.Arrays.fill(lightColors,0f); java.util.Arrays.fill(lightPositions,0f);"+
             "for(int n=0;n<usedLightPool.size && n<MAX_DYNAMIC_LIGHTS;n++){ com.interrupt.dungeoneer.gfx.DynamicLight l=(com.interrupt.dungeoneer.gfx.DynamicLight)usedLightPool.get(n);"+
             "lightPositions[n*3]=l.position.x;lightPositions[n*3+1]=l.position.y;lightPositions[n*3+2]=l.position.z;"+

@@ -4,6 +4,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using System.Windows.Forms;
+using Microsoft.Win32;
 
 // A direct game entry point, with no launcher window. Steam tracks this process
 // until the Java game exits. No PowerShell, JDK or external .NET download needed.
@@ -29,7 +30,9 @@ internal static class Start {
             if(check)return 0;
             Directory.CreateDirectory(profile);
             string cp=Path.Combine(root,"patch.jar")+";"+Path.Combine(root,"mod.jar")+";"+Path.Combine(root,"lib","*")+";"+jar;
-            string flags=smoke?" -Ddelver.vr.simulate=true -Ddelver.vr.smoke=true":"";
+            string flags=smoke?" -Ddelver.vr.simulate=true -Ddelver.vr.smoke=true -Ddelver.vr.workshop=false":"";
+            flags+=" "+Quote("-Ddelver.vr.gameDir="+game);
+            try { using(var key=Registry.CurrentUser.OpenSubKey(@"Software\Valve\Steam")) {string steam=key==null?null:key.GetValue("SteamPath") as string;if(!String.IsNullOrEmpty(steam))flags+=" "+Quote("-Ddelver.vr.steamDir="+steam);}} catch(System.Security.SecurityException) {}
             var info=new ProcessStartInfo(java,"-Xmx2G"+flags+" -cp "+Quote(cp)+" delver.vr.Launcher");
             info.WorkingDirectory=profile;info.UseShellExecute=false;info.CreateNoWindow=true;
             info.RedirectStandardOutput=info.RedirectStandardError=true;

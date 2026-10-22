@@ -16,6 +16,9 @@ if(Test-Path -LiteralPath "$base/build-game.sha256"){
 }
 "Steam archive SHA256: $hash" | Set-Content (Join-Path $base 'game-version.txt')
 if($Check){Write-Host "Game: $gameJar`nJava: $java`nVR saves: $save`nSHA256: $hash";exit 0}
+$vrJavaFlags=@('-Xmx2G',"-Ddelver.vr.gameDir=$GamePath")
+$vrSteamPath=(Get-ItemProperty 'HKCU:\Software\Valve\Steam' -Name SteamPath -ErrorAction SilentlyContinue).SteamPath
+if($vrSteamPath){$vrJavaFlags+="-Ddelver.vr.steamDir=$vrSteamPath"}
 Set-Location -LiteralPath $save
 # Windows PowerShell 5.1 wraps native stderr in ErrorRecord objects. Delver
 # writes recoverable asset lookups there, so Stop would abort the pipeline
@@ -25,7 +28,7 @@ $savedErrorPreference=$ErrorActionPreference
 $PSNativeCommandUseErrorActionPreference=$false
 try {
     $ErrorActionPreference='Continue'
-    & $java '-Xmx2G' -cp "$base/delver-vr.jar;$base/lib/*;$gameJar" delver.vr.Launcher 2>&1 |
+    & $java @vrJavaFlags -cp "$base/delver-vr.jar;$base/lib/*;$gameJar" delver.vr.Launcher 2>&1 |
         ForEach-Object { $_.ToString() } |
         Tee-Object -FilePath (Join-Path $base 'delver-vr.log')
     $javaExitCode=$LASTEXITCODE

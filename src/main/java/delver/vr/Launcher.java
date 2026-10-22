@@ -24,6 +24,7 @@ public final class Launcher implements ApplicationListener {
     }
     public void render() {
         if(Boolean.getBoolean("delver.vr.smoke")&&++frames==30){GameApplication.ShowMainScreen();com.interrupt.dungeoneer.GameManager.getGame().progression.sawTutorial=true;}
+        if(Boolean.getBoolean("delver.vr.settingsPreview")&&frames==90){Vr.current.hideMenu();NativeUi.update();com.interrupt.dungeoneer.overlays.OverlayManager.instance.push(new VrOptionsOverlay(false,true));}
         Vr.begin();
         if(Boolean.getBoolean("delver.vr.smoke"))while(Gdx.gl.glGetError()!=0){}
         game.render();
@@ -37,15 +38,28 @@ public final class Launcher implements ApplicationListener {
         }
         if(Boolean.getBoolean("delver.vr.smoke")){int e=Gdx.gl.glGetError();if(e!=0)Gdx.app.log("DelverVR","Game render GL error="+e+" frame="+frames);}
         Vr.finish();
+        if(System.getProperty("delver.vr.inspectMods")!=null&&frames==50)try{Class.forName("delver.vr.ModSceneInspection").getMethod("run").invoke(null);}catch(Exception e){throw new RuntimeException(e);}
         if(Boolean.getBoolean("delver.vr.regression")&&frames==50)try{
             Class.forName("delver.vr.InteractionRegression").getMethod("run").invoke(null);
+            Class.forName("delver.vr.VrSettingsRegression").getMethod("run").invoke(null);
+            Class.forName("delver.vr.VrControlsRegression").getMethod("run").invoke(null);
+            Class.forName("delver.vr.WorkshopRegression").getMethod("run").invoke(null);
+            Class.forName("delver.vr.NativeUseRegression").getMethod("run").invoke(null);
+            Class.forName("delver.vr.LightSelectionRegression").getMethod("run").invoke(null);
+            Class.forName("delver.vr.InventoryExpansionRegression").getMethod("run").invoke(null);
             Class.forName("delver.vr.StairsRegression").getMethod("run").invoke(null);
             Class.forName("delver.vr.LadderRegression").getMethod("run").invoke(null);
             Class.forName("delver.vr.ItemUseRegression").getMethod("run").invoke(null);
             Class.forName("delver.vr.ShadowBatchRegression").getMethod("run").invoke(null);
         }catch(Exception e){throw new RuntimeException("VR interaction regression failed",e);}
         if(Boolean.getBoolean("delver.vr.smoke.save")&&frames==31)com.interrupt.dungeoneer.GameManager.getGame().save();
-        if(Boolean.getBoolean("delver.vr.smoke")&&frames==60)Vr.current.toggleInventory();
+        if(Boolean.getBoolean("delver.vr.smoke")&&frames==60&&!Boolean.getBoolean("delver.vr.wristPreview"))Vr.current.toggleInventory();
+        if(Boolean.getBoolean("delver.vr.wristPreview")&&frames==31){VrSettings.mapMode=VrSettings.hotbarMode=0;}
+        if(Boolean.getBoolean("delver.vr.effectsPreview")&&frames==61){
+            com.interrupt.dungeoneer.statuseffects.StatusEffect positive=new com.interrupt.dungeoneer.statuseffects.StatusEffect();positive.name="Regeneration";positive.timer=3600;
+            com.interrupt.dungeoneer.statuseffects.StatusEffect negative=new com.interrupt.dungeoneer.statuseffects.StatusEffect();negative.name="Poison";negative.timer=1800;
+            Vr.current.player.statusEffects=new com.badlogic.gdx.utils.Array<com.interrupt.dungeoneer.statuseffects.StatusEffect>();Vr.current.player.statusEffects.add(positive);Vr.current.player.statusEffects.add(negative);
+        }
         if(Boolean.getBoolean("delver.vr.smoke")&&(frames==10||frames==32||frames==100)){
             int w=Gdx.graphics.getWidth(),h=Gdx.graphics.getHeight();
             com.badlogic.gdx.graphics.Pixmap image=new com.badlogic.gdx.graphics.Pixmap(w,h,com.badlogic.gdx.graphics.Pixmap.Format.RGBA8888);

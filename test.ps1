@@ -28,3 +28,15 @@ Get-Content dist/smoke.log -Tail 3
 
 
 if(!(Select-String -Path dist/smoke.log -Pattern 'STAIRS PASS')){throw 'Stair regressions did not finish'}
+
+if(!(Select-String -Path dist/smoke.log -Pattern 'VR SETTINGS PASS')){throw 'VR settings regressions did not finish'}
+
+if(!(Select-String -Path dist/smoke.log -Pattern 'VR CONTROLS PASS')){throw 'VR controls regressions did not finish'}
+
+if(!(Select-String -Path dist/smoke.log -Pattern 'WORKSHOP PASS')){throw 'Workshop regressions did not finish'}
+
+if(!(Select-String -Path dist/smoke.log -Pattern 'NATIVE USE PASS')){throw 'Native mod interaction regressions did not finish'}
+
+if(!(Select-String -Path dist/smoke.log -Pattern 'LIGHT SELECTION PASS')){throw 'Light selection regressions did not finish'}
+
+if(!(Select-String -Path dist/smoke.log -Pattern 'INVENTORY EXPANSION PASS')){throw 'Inventory expansion regressions did not finish'}

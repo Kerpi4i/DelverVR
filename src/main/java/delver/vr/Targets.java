@@ -46,17 +46,26 @@ public final class Targets {
     }
     private static void collect(Object o,Array<Entity> out,Set<Object> seen) {
         if(o==null||!seen.add(o))return;
-        if(o instanceof Entity){out.add((Entity)o);return;}
+        if(o instanceof Entity){out.add((Entity)o);collect(field(o,"entities"),out,seen);collect(field(o,"attached"),out,seen);return;}
         if(o instanceof Array){for(Object e:(Array<?>)o)collect(e,out,seen);return;}
         for(String name:new String[]{"entities","static_entities","non_collidable_entities","overworldChunk","up","down"})collect(field(o,name),out,seen);
     }
+    private static final Map<Class<?>,Map<String,Field>> fields=new IdentityHashMap<Class<?>,Map<String,Field>>();
     private static Object field(Object o,String name) {
-        for(Class<?> c=o.getClass();c!=null;c=c.getSuperclass())try{Field f=c.getDeclaredField(name);f.setAccessible(true);return f.get(o);}catch(NoSuchFieldException ignored){}catch(IllegalAccessException e){throw new IllegalStateException(e);}
-        return null;
+        Map<String,Field> known=fields.get(o.getClass());if(known==null){known=new HashMap<String,Field>();fields.put(o.getClass(),known);}
+        if(!known.containsKey(name)){
+            Field found=null;for(Class<?> c=o.getClass();c!=null;c=c.getSuperclass())try{found=c.getDeclaredField(name);found.setAccessible(true);break;}catch(NoSuchFieldException ignored){}
+            known.put(name,found);
+        }
+        Field f=known.get(name);if(f==null)return null;
+        try{return f.get(o);}catch(IllegalAccessException e){throw new IllegalStateException(e);}
     }
     public static boolean usable(Entity e) {
         if(e instanceof com.interrupt.dungeoneer.entities.triggers.Trigger)
-            return ((com.interrupt.dungeoneer.entities.triggers.Trigger)e).triggerType==com.interrupt.dungeoneer.entities.triggers.Trigger.TriggerType.USE;
+            // Native Trigger.use also accepts visible touch triggers (some Workshop
+            // entrances use these as clickable teleport markers). Keep hidden
+            // automatic scene scripts out of controller targeting.
+            return ((com.interrupt.dungeoneer.entities.triggers.Trigger)e).triggerType==com.interrupt.dungeoneer.entities.triggers.Trigger.TriggerType.USE||!e.hidden;
         try{Class<?> owner=e.getClass().getMethod("use",Player.class,float.class,float.class).getDeclaringClass();
             return owner!=Entity.class&&(owner!=Actor.class||((Actor)e).getUseTrigger()!=null);}
         catch(NoSuchMethodException impossible){throw new IllegalStateException(impossible);}

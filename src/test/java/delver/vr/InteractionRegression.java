@@ -55,6 +55,10 @@ public final class InteractionRegression {
             Vr.activate(1);check(talk.uses==1,"Invisible dialogue USE trigger not dispatched");
             talk.triggerType=Trigger.TriggerType.PLAYER_TOUCHED;
             check(!Targets.usable(talk),"Touch-only trigger should not be activated by hand");
+            talk.hidden=false;
+            check(Targets.usable(talk),"Visible Workshop touch marker must accept native USE");
+            Vr.activate(1);check(talk.uses==2,"Visible touch marker USE not dispatched");
+            talk.hidden=true;
             Chunk chunk=new Chunk();chunk.entities.add(door);chunk.entities.add(door);
             Renderer fake=new Renderer();fake.chunks.add(chunk);
             Array<Entity> all=Targets.all(level,fake);int count=0;for(Entity e:all)if(e==door)count++;
@@ -68,9 +72,13 @@ public final class InteractionRegression {
             Vr.grab(1);check(h.held==item&&p.inventory.contains(item,true)&&!item.isActive,"Explicit pickup of moving item failed");
             // A rotated/translating left controller must carry the hotbar and hit
             // regions together. Selecting a consumable must neither clone nor drink it.
-            Vr.hands[0].valid=true;Vr.hands[0].world.idt().translate(h.pos).rotate(Vector3.Y,37).scale(Vr.SCALE,Vr.SCALE,Vr.SCALE);
+            VrSettings.hotbarMode=0;Vr.hands[0].valid=true;Vr.hands[0].world.idt().translate(h.pos).rotate(Vector3.Y,37).scale(Vr.SCALE,Vr.SCALE,Vr.SCALE);
             int slots=WristHotbar.count(p);
             for(int i=0;i<slots;i++)check(WristHotbar.hover(Vr.hands[0].world,WristHotbar.slotCenter(Vr.hands[0].world,slots,i),slots)==i,"Wrist slot transform mismatch "+i);
+            for(int i=0;i<slots;i++){
+                Matrix4 f=WristHotbar.frame(Vr.hands[0].world);Vector3 from=WristHotbar.slotCenter(Vr.hands[0].world,slots,i).mul(new Matrix4(f).inv()).add(0,0,.25f).mul(f);
+                check(WristHotbar.aim(Vr.hands[0].world,f,from,slots)==i,"Ray cannot reach wrist slot "+i);
+            }
             int itemIndex=p.inventory.indexOf(item,true),slot=slots-1;
             Item displaced=p.inventory.get(slot);
             if(itemIndex!=slot){p.inventory.set(itemIndex,displaced);p.inventory.set(slot,item);}
@@ -80,7 +88,7 @@ public final class InteractionRegression {
             Vr.release(1);check(h.held==null&&p.inventory.contains(item,true),"Release at wrist dropped the item");
             h.pos.set(new Vector3((slots*.5f+.5f)*WristHotbar.CELL,0,0).mul(WristHotbar.frame(Vr.hands[0].world)));
             boolean menuWasOpen=Vr.current.getShowingMenu();
-            check(Vr.takeHotbar()&&Vr.current.getShowingMenu()!=menuWasOpen,"Physical BAG button did not toggle native inventory");
+            Vr.pToggleInventory();check(Vr.current.getShowingMenu()!=menuWasOpen,"Y inventory toggle failed");
             check(com.interrupt.dungeoneer.game.Game.inventoryScreen.isVisible(),"Stock inventory screen not shown");
             boolean equipment=false;
             for(com.interrupt.dungeoneer.ui.EquipLoc loc:com.interrupt.dungeoneer.game.Game.hud.equipLocations.values())if(loc.visible)equipment=true;
@@ -88,11 +96,11 @@ public final class InteractionRegression {
             testNativePointer();
             Vr.renderScene(Vr.renderer,Vr.current);
             Vr.nativeUiFrame.begin();com.badlogic.gdx.graphics.Pixmap uiPixels=com.badlogic.gdx.utils.ScreenUtils.getFrameBufferPixmap(0,0,8,Vr.nativeUiFrame.getHeight());Vr.nativeUiFrame.end();
-            check((uiPixels.getPixel(1,uiPixels.getHeight()/2)&255)>60&&(uiPixels.getPixel(1,uiPixels.getHeight()/2)&255)<230,"Native inventory scrim is missing or opaque");uiPixels.dispose();
+            check((uiPixels.getPixel(1,uiPixels.getHeight()/2)&255)==0,"Inventory dimmed the whole UI canvas");uiPixels.dispose();
             Vr.pToggleInventory();
-            Vr.togglePause();check(com.interrupt.dungeoneer.overlays.OverlayManager.instance.current() instanceof com.interrupt.dungeoneer.overlays.PauseOverlay,"X did not open pause from gameplay");
-            Vr.togglePause();com.interrupt.dungeoneer.overlays.OverlayManager.instance.draw(1f);check(!(com.interrupt.dungeoneer.overlays.OverlayManager.instance.current() instanceof com.interrupt.dungeoneer.overlays.PauseOverlay),"X did not dismiss pause");
-            Vr.pToggleInventory();Vr.togglePause();check(!Vr.current.getShowingMenu()&&!(com.interrupt.dungeoneer.overlays.OverlayManager.instance.current() instanceof com.interrupt.dungeoneer.overlays.PauseOverlay),"Closing inventory opened pause");
+            Vr.togglePause();check(com.interrupt.dungeoneer.overlays.OverlayManager.instance.current() instanceof com.interrupt.dungeoneer.overlays.PauseOverlay,"B did not open pause from gameplay");
+            Vr.togglePause();com.interrupt.dungeoneer.overlays.OverlayManager.instance.draw(1f);check(!(com.interrupt.dungeoneer.overlays.OverlayManager.instance.current() instanceof com.interrupt.dungeoneer.overlays.PauseOverlay),"B did not dismiss pause");
+            Vr.pToggleInventory();Vr.pToggleInventory();check(!Vr.current.getShowingMenu()&&!(com.interrupt.dungeoneer.overlays.OverlayManager.instance.current() instanceof com.interrupt.dungeoneer.overlays.PauseOverlay),"Y closing inventory opened pause");
             if(itemIndex!=slot){p.inventory.set(slot,displaced);p.inventory.set(itemIndex,item);}
             h.pos.set(previousPos);Vr.hands[0].world.set(leftWorld);Vr.hands[0].valid=leftValid;
             // Release with a fast hand must execute Delver's toss hook, not just

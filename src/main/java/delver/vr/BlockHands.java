@@ -42,7 +42,7 @@ public final class BlockHands {
             palms[i].transform.set(h.world).translate(0,-.012f,HandRig.PALM_LENGTH*.5f);
             arms[i].transform.set(h.world).translate(0,-.012f,HandRig.PALM_LENGTH+length*.5f);
             cuffs[i].transform.set(h.world).translate(0,-.012f,HandRig.PALM_LENGTH+.009f);
-            batch.render(arms[i],light);batch.render(cuffs[i],light);batch.render(palms[i],light);
+            if(!VrSettings.handsOnly){batch.render(arms[i],light);batch.render(cuffs[i],light);}batch.render(palms[i],light);
         }
         batch.end();
     }
