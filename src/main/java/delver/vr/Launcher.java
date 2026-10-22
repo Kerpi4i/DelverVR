@@ -41,6 +41,7 @@ public final class Launcher implements ApplicationListener {
         if(System.getProperty("delver.vr.inspectMods")!=null&&frames==50)try{Class.forName("delver.vr.ModSceneInspection").getMethod("run").invoke(null);}catch(Exception e){throw new RuntimeException(e);}
         if(Boolean.getBoolean("delver.vr.regression")&&frames==50)try{
             Class.forName("delver.vr.InteractionRegression").getMethod("run").invoke(null);
+            Class.forName("delver.vr.SkyRegression").getMethod("run").invoke(null);
             Class.forName("delver.vr.VrSettingsRegression").getMethod("run").invoke(null);
             Class.forName("delver.vr.VrControlsRegression").getMethod("run").invoke(null);
             Class.forName("delver.vr.WorkshopRegression").getMethod("run").invoke(null);

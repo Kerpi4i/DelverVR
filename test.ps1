@@ -21,6 +21,7 @@ try {
 } finally {Pop-Location}
 if(!(Select-String -Path dist/smoke.log -Pattern 'SMOKE PASS')){throw 'Smoke test did not finish'}
 if(!(Select-String -Path dist/smoke.log -Pattern 'INTERACTION PASS')){throw 'Interaction regressions did not finish'}
+if(!(Select-String -Path dist/smoke.log -Pattern 'SKY PASS')){throw 'Sky stereo state regression did not finish'}
 if(!(Select-String -Path dist/smoke.log -Pattern 'LADDER PASS')){throw 'Ladder physics regressions did not finish'}
 if(!(Select-String -Path dist/smoke.log -Pattern 'ITEM USE PASS')){throw 'Bomb/inventory regressions did not finish'}
 if((Select-String -Path dist/smoke.log -Pattern 'SHADOW BATCH PASS').Count -ne 2){throw 'Shadow batch regressions did not finish'}

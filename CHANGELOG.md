@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.1 — 2026-10-22
+
+- Make sky rendering independent of inherited depth-test/write state between eyes. Stars and moon planes render without sky self-occlusion; depth state is restored before the world pass.
+- Enable depth writes before each frame clear so stale depth cannot survive a prior pass.
+- GPU regression compares original sky pixels under opposite inherited depth states and a deliberately stale depth buffer. Headset confirmation remains required.
+
+
 ## 0.2.0 — 2026-10-22
 
 - Add Options > VR, hand models, independent wrist map/hotbar visibility and Touch controls.

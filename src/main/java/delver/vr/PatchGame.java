@@ -55,7 +55,11 @@ public final class PatchGame {
             +"com.interrupt.dungeoneer.game.Game.ui.draw(); "
             +"com.interrupt.dungeoneer.entities.Item hovered=com.interrupt.dungeoneer.game.Game.hud.getMouseOverItem(); "
             +"if(hovered!=null){ uiBatch.begin(); com.interrupt.dungeoneer.game.Game.tooltip.show((float)com.badlogic.gdx.Gdx.input.getX(),(float)(com.badlogic.gdx.Gdx.graphics.getHeight()-com.badlogic.gdx.Gdx.input.getY()),hovered);uiBatch.end(); } else com.interrupt.dungeoneer.game.Game.tooltip.hide(); }",renderer));
-        renderer.getDeclaredMethod("startFrame").insertBefore("delver.vr.Vr.bindEye();");
+        renderer.getDeclaredMethod("startFrame").insertBefore("delver.vr.Vr.bindEye(); com.badlogic.gdx.Gdx.gl.glDepthMask(true);");
+        // The desktop mirror disables depth after the stereo pair, whereas hands
+        // leave it enabled between eyes. Sky planes must not inherit either state.
+        renderer.getDeclaredMethod("renderSkybox").insertBefore("com.badlogic.gdx.Gdx.gl.glDisable(com.badlogic.gdx.graphics.GL20.GL_DEPTH_TEST); com.badlogic.gdx.Gdx.gl.glDepthMask(false);");
+        renderer.getDeclaredMethod("renderSkybox").insertAfter("com.badlogic.gdx.Gdx.gl.glDepthMask(true); com.badlogic.gdx.Gdx.gl.glEnable(com.badlogic.gdx.graphics.GL20.GL_DEPTH_TEST); com.badlogic.gdx.Gdx.gl.glDepthFunc(com.badlogic.gdx.graphics.GL20.GL_LEQUAL);",true);
         renderer.getDeclaredMethod("renderStencilPass").insertBefore("$1=delver.vr.ShadowBatch.prepare($1);");
         renderer.getDeclaredMethod("Render").instrument(new ExprEditor(){
             public void edit(MethodCall m)throws CannotCompileException {
