@@ -4,7 +4,7 @@
 
 - Correct 0.2.1 sky rendering: restore native depth-tested sky geometry with a fresh depth buffer for each eye, instead of disabling depth.
 - Compare both inherited eye states against an independent native mesh render with depth testing; equality between eyes alone was insufficient.
-- Headset verification remains required after updating.
+- Corrected sky rendering confirmed in the headset by the tester.
 
 
 ## 0.2.1 — 2026-10-22

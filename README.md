@@ -114,7 +114,7 @@ Interrupt. This mod is not endorsed by Priority Interrupt, Valve or Meta.
 
 ## VR settings
 
-Version `0.2.2` is prepared locally; publication is separate. Options > VR controls hand models and separate map/hotbar visibility: Always visible, While held, Toggle. Default is While held for both.
+Version `0.2.2` includes the following settings. Options > VR controls hand models and separate map/hotbar visibility: Always visible, While held, Toggle. Default is While held for both.
 
 A controls the right wrist map; X controls the left wrist hotbar. Y opens/closes inventory, B opens pause, right stick click recenters. Left stick moves/climbs, right stick turns. Grip grabs/releases items, trigger collects/uses items and clicks UI; a held bomb ignites with trigger. Hotbar slots accept near touch or pointing followed by grip/trigger. Throw with a releasing swing; release near the body to store. Bow uses the other hand to draw, then trigger release.
 
@@ -128,6 +128,6 @@ Steam handles subscriptions/downloads. This integration reads installed content 
 
 The wrist hotbar uses one compact row close to the wrist.
 
-Local beta.9 also restores native USE fallback from head aiming and special interactive tiles, alongside controller targeting. Mod trigger groups/attachments are included. The dynamic-light budget is ranked by brightness/range attenuation to avoid tiny nearby decorative sources displacing room lights. This changes selection rather than the authored light radii; headset checks of the reported mod rooms are still required.
+Version 0.2.2 restores native USE fallback from head aiming and special interactive tiles, alongside controller targeting. Mod trigger groups/attachments are included. The dynamic-light budget is ranked by brightness/range attenuation to avoid tiny nearby decorative sources displacing room lights. This changes selection rather than the authored light radii; headset checks of the reported mod rooms are still required.
 
-Local beta.10: inventory panel bounds follow current player capacity instead of cached HUD dimensions. Native limits verified: 36 backpack slots plus 10 hotbar slots, 46 total; maximum backpack is six rows of six. Native upgrade paths and 114 backpack/hotbar size combinations are covered by runtime checks, including equipment bounds and added effect-list height.
+Inventory sizing: inventory panel bounds follow current player capacity instead of cached HUD dimensions. Native limits verified: 36 backpack slots plus 10 hotbar slots, 46 total; maximum backpack is six rows of six. Native upgrade paths and 114 backpack/hotbar size combinations are covered by runtime checks, including equipment bounds and added effect-list height.
